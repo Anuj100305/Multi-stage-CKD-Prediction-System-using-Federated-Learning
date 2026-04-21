@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CKD Prediction</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .btn-group {
+            margin-top: 20px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        img {
+            margin-top: 15px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>CKD Prediction System</h1>
+
+    <!-- 🔥 MAIN FORM (single form for everything) -->
+    <form method="post">
+
+        <div class="grid">
+
+            <label>Age
+                <input name="age" value="{{ values.get('age','') }}">
+            </label>
+
+            <label>BP
+                <input name="bp" value="{{ values.get('bp','') }}">
+            </label>
+
+            <label>SG
+                <input name="sg" value="{{ values.get('sg','') }}">
+            </label>
+
+            <label>Albumin
+                <input name="al" value="{{ values.get('al','') }}">
+            </label>
+
+            <label>Blood Glucose
+                <input name="bgr" value="{{ values.get('bgr','') }}">
+            </label>
+
+            <label>Creatinine
+                <input name="sc" value="{{ values.get('sc','') }}">
+            </label>
+
+            <label>Sodium
+                <input name="sod" value="{{ values.get('sod','') }}">
+            </label>
+
+            <label>Potassium
+                <input name="pot" value="{{ values.get('pot','') }}">
+            </label>
+
+            <label>BUN
+                <input name="bu" value="{{ values.get('bu','') }}">
+            </label>
+
+            <label>Hemoglobin
+                <input name="hemo" value="{{ values.get('hemo','') }}">
+            </label>
+
+        </div>
+
+        <!-- 🔥 BUTTONS -->
+        <div class="btn-group">
+            <button formaction="/predict">Predict (Centralized + Federated)</button>
+            <button formaction="/explain">Explain Prediction</button>
+        </div>
+
+    </form>
+
+    <!-- 🔥 RESULTS -->
+    <div class="result">
+        {% if central_result %}
+            <p>{{ central_result }}</p>
+        {% endif %}
+
+        {% if fed_result %}
+            <p>{{ fed_result }}</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <!-- 🔥 LIME GRAPH -->
+    <div class="section">
+        <h3>Explainability</h3>
+        {% if lime_graph %}
+            <img src="{{ lime_graph }}" width="500">
+        {% endif %}
+    </div>
+
+    <!-- 🔥 ACCURACY GRAPH -->
+    <div class="section">
+        <h2>Model Accuracy Comparison</h2>
+        {% if accuracy_graph %}
+            <img src="{{ accuracy_graph }}" width="500">
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>
