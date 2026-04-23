@@ -7,43 +7,57 @@ import datetime
 
 app = Flask(__name__)
 
+# Load saved files
 model = joblib.load("final/acem_model.pkl")
 fed_models = joblib.load("final/federated_models.pkl")
+fed_weights = joblib.load("final/federated_weights.pkl")
 scaler = joblib.load("final/scaler.pkl")
 feature_names = joblib.load("final/features.pkl")
 X_train = np.load("final/X_train.npy")
 
-class_names = ["Stage 1","Stage 2","Stage 3","Stage 4","Stage 5"]
+class_names = ["Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"]
+
 
 def safe_float(val):
     try:
-        return float(val) if val else 0.0
-    except:
+        if val is None or str(val).strip() == "":
+            return 0.0
+        return float(val)
+    except Exception:
         return 0.0
 
-def federated_predict(models, X):
-    preds = [m.predict_proba(X) for m in models]
-    return np.mean(preds, axis=0)
+
+def federated_predict(models, weights, X):
+    prob_sum = np.zeros((X.shape[0], 5), dtype=float)
+    for w, m in zip(weights, models):
+        prob_sum += w * m.predict_proba(X)
+    return prob_sum
+
 
 @app.route("/")
 def home():
     return render_template("index.html", values={})
 
+
 @app.route("/predict", methods=["POST"])
 def predict():
+    values = {}
 
-    values = {f: request.form.get(f) for f in feature_names}
+    for f in feature_names:
+        val = request.form.get(f)
+        values[f] = val if val is not None and val != "" else "0"
+
     data = [safe_float(values[f]) for f in feature_names]
     scaled = scaler.transform([data])
 
-    # ACEM
+    # ACEM prediction
     pred = model.predict(scaled)[0]
     prob = np.max(model.predict_proba(scaled)) * 100
 
-    # Federated
-    fed_probs = federated_predict(fed_models, scaled)
-    fed_pred = np.argmax(fed_probs)
-    fed_prob = np.max(fed_probs) * 100
+    # Federated prediction
+    fed_probs = federated_predict(fed_models, fed_weights, scaled)
+    fed_pred = int(np.argmax(fed_probs))
+    fed_prob = float(np.max(fed_probs)) * 100
 
     return render_template(
         "index.html",
@@ -53,10 +67,15 @@ def predict():
         accuracy_graph="static/model_accuracy.png"
     )
 
+
 @app.route("/explain", methods=["POST"])
 def explain():
+    values = {}
 
-    values = {f: request.form.get(f) for f in feature_names}
+    for f in feature_names:
+        val = request.form.get(f)
+        values[f] = val if val is not None and val != "" else "0"
+
     data = [safe_float(values[f]) for f in feature_names]
     scaled = scaler.transform([data])
 
@@ -75,14 +94,15 @@ def explain():
 
     fig = exp.as_pyplot_figure()
     path = "static/lime.png"
-    fig.savefig(path)
-    plt.close()
+    fig.savefig(path, bbox_inches="tight")
+    plt.close(fig)
 
     return render_template(
         "index.html",
         values=values,
         lime_graph=path + "?t=" + str(datetime.datetime.now().timestamp())
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

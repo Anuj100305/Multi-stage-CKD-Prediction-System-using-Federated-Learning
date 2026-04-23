@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CKD Prediction</title>
-
+    <title>CKD Prediction System</title>
     <style>
         body {
             font-family: Arial;
@@ -10,7 +9,7 @@
         }
 
         .container {
-            width: 80%;
+            width: 85%;
             margin: auto;
             background: white;
             padding: 30px;
@@ -19,6 +18,7 @@
 
         h1 {
             text-align: center;
+            margin-bottom: 20px;
         }
 
         .grid {
@@ -30,6 +30,7 @@
         label {
             display: flex;
             flex-direction: column;
+            font-weight: bold;
         }
 
         input {
@@ -45,6 +46,7 @@
             background: #007bff;
             color: white;
             cursor: pointer;
+            margin-right: 10px;
         }
 
         button:hover {
@@ -53,21 +55,31 @@
 
         .btn-group {
             margin-top: 20px;
+            text-align: center;
         }
 
         .result {
             margin-top: 20px;
             font-size: 20px;
             font-weight: bold;
+            color: #333;
         }
 
         .section {
             margin-top: 30px;
+            text-align: center;
         }
 
         img {
             margin-top: 15px;
             border-radius: 10px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: gray;
         }
     </style>
 </head>
@@ -76,56 +88,57 @@
 
 <div class="container">
 
-    <h1>CKD Prediction System</h1>
+    <h1>AI-Based CKD Prediction System</h1>
 
-    <!-- 🔥 MAIN FORM (single form for everything) -->
+    <!-- ✅ SINGLE FORM -->
     <form method="post">
 
         <div class="grid">
 
             <label>Age
-                <input name="age" value="{{ values.get('age','') }}">
+                <input name="age" type="number" value="{{ values.get('age','') }}">
             </label>
 
-            <label>BP
-                <input name="bp" value="{{ values.get('bp','') }}">
+            <label>Blood Pressure (BP)
+                <input name="bp" type="number" step="any"
+                value="{{ values.get('bp', '') or request.form.get('bp','') }}" placeholder="Enter BP" required>
             </label>
 
-            <label>SG
-                <input name="sg" value="{{ values.get('sg','') }}">
+            <label>Specific Gravity (SG)
+                <input name="sg" type="number" step="0.001" min="1.0" max="1.03" value="{{ values.get('sg','') }}">
             </label>
 
             <label>Albumin
-                <input name="al" value="{{ values.get('al','') }}">
+                <input name="al" type="number" min="0" max="5" value="{{ values.get('al','') }}">
             </label>
 
             <label>Blood Glucose
-                <input name="bgr" value="{{ values.get('bgr','') }}">
+                <input name="bgr" type="number" min="70" max="300" value="{{ values.get('bgr','') }}">
             </label>
 
             <label>Creatinine
-                <input name="sc" value="{{ values.get('sc','') }}">
+                <input name="sc" type="number" step="any" min="0" value="{{ values.get('sc','') }}">
             </label>
 
             <label>Sodium
-                <input name="sod" value="{{ values.get('sod','') }}">
+                <input name="sod" type="number" value="{{ values.get('sod','') }}">
             </label>
 
             <label>Potassium
-                <input name="pot" value="{{ values.get('pot','') }}">
+                <input name="pot" type="number" step="any" value="{{ values.get('pot','') }}">
             </label>
 
             <label>BUN
-                <input name="bu" value="{{ values.get('bu','') }}">
+                <input name="bu" type="number" value="{{ values.get('bu','') }}">
             </label>
 
             <label>Hemoglobin
-                <input name="hemo" value="{{ values.get('hemo','') }}">
+                <input name="hemo" type="number" min="5" max="20" value="{{ values.get('hemo','') }}">
             </label>
 
         </div>
 
-        <!-- 🔥 BUTTONS -->
+        <!-- ✅ BUTTONS -->
         <div class="btn-group">
             <button formaction="/predict">Predict (Centralized + Federated)</button>
             <button formaction="/explain">Explain Prediction</button>
@@ -133,7 +146,7 @@
 
     </form>
 
-    <!-- 🔥 RESULTS -->
+    <!-- ✅ RESULTS -->
     <div class="result">
         {% if central_result %}
             <p>{{ central_result }}</p>
@@ -146,20 +159,28 @@
 
     <hr>
 
-    <!-- 🔥 LIME GRAPH -->
+    <!-- ✅ LIME GRAPH -->
     <div class="section">
-        <h3>Explainability</h3>
+        <h3>Explainability (LIME)</h3>
         {% if lime_graph %}
-            <img src="{{ lime_graph }}" width="500">
+            <img src="{{ lime_graph }}?t={{ range(1,10000)|random }}" width="600">
         {% endif %}
     </div>
 
-    <!-- 🔥 ACCURACY GRAPH -->
+    <!-- ✅ MODEL ACCURACY GRAPH -->
     <div class="section">
         <h2>Model Accuracy Comparison</h2>
-        {% if accuracy_graph %}
-            <img src="{{ accuracy_graph }}" width="500">
-        {% endif %}
+        <img src="{{ url_for('static', filename='model_accuracy.png') }}?t={{ range(1,10000)|random }}" width="600">
+    </div>
+
+    <!-- ✅ PRIVACY GRAPH -->
+    <div class="section">
+        <h3>Accuracy vs Privacy Trade-off</h3>
+        <img src="{{ url_for('static', filename='privacy_vs_accuracy.png') }}?t={{ range(1,10000)|random }}" width="600">
+    </div>
+
+    <div class="footer">
+        Adaptive Clinical Ensemble Model (ACEM) | Federated Learning Enabled System
     </div>
 
 </div>

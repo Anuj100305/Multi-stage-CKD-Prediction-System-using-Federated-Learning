@@ -7,7 +7,7 @@ def preprocess_data(path):
     df = pd.read_csv(path)
     df.columns = df.columns.str.strip()
 
-    df = df[df["stage"].isin(["s1","s2","s3","s4","s5"])]
+    df = df[df["stage"].isin(["s1", "s2", "s3", "s4", "s5"])]
 
     df.replace("?", np.nan, inplace=True)
 
@@ -25,7 +25,7 @@ def preprocess_data(path):
 
     df.drop(columns=["class", "affected"], errors="ignore", inplace=True)
 
-    stage_map = {"s1":0,"s2":1,"s3":2,"s4":3,"s5":4}
+    stage_map = {"s1": 0, "s2": 1, "s3": 2, "s4": 3, "s5": 4}
     df["stage"] = df["stage"].map(stage_map)
 
     y = df["stage"]
